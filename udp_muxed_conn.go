@@ -110,6 +110,7 @@ func (c *udpMuxedConn) Close() error {
 	var err error
 	c.closeOnce.Do(func() {
 		err = c.buffer.Close()
+		c.params.Logger.Infof("udpMuxedConn %p and buffer %p closed\n", c, c.buffer)
 		close(c.closedChan)
 	})
 	c.mu.Lock()

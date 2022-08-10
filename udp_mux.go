@@ -92,6 +92,7 @@ func (m *UDPMuxDefault) GetConn(ufrag string) (net.PacketConn, error) {
 	go func() {
 		<-c.CloseChannel()
 		m.removeConn(ufrag)
+		m.params.Logger.Infof("udpMuxConn %p removed from UdpMuxDefault %p\n", c, m)
 	}()
 	m.conns[ufrag] = c
 	return c, nil
@@ -261,13 +262,13 @@ func (m *UDPMuxDefault) connWorker() {
 			m.mu.Unlock()
 		}
 
-		if destinationConn == nil {
+		if destinationConn == nil || destinationConn.isClosed() {
 			m.params.Logger.Tracef("dropping packet from %s, addr: %s", udpAddr.String(), addr.String())
 			continue
 		}
 
 		if err = destinationConn.writePacket(buf[:n], udpAddr); err != nil {
-			m.params.Logger.Errorf("could not write packet: %v", err)
+			m.params.Logger.Errorf("could not write packet to buffer: %v, udpMuxConn %p, %p\n", err, destinationConn, destinationConn.buffer)
 		}
 	}
 }
