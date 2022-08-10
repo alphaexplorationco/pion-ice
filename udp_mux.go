@@ -286,7 +286,7 @@ func (m *UDPMuxDefault) connWorker() {
 			m.mu.Unlock()
 		}
 
-		if destinationConn == nil {
+		if destinationConn == nil || destinationConn.isClosed() {
 			m.params.Logger.Tracef("dropping packet from %s, addr: %s", udpAddr.String(), addr.String())
 			continue
 		}
